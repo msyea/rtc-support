@@ -34,8 +34,14 @@ const cursorPng = require("./icons").cursor;
     });
   };
   
-  const encode64 = str => str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  const decode64 = str => (str.replace(/\-/g, '+').replace(/_/g, '/') + '=='.substring(0, (3*str.length)%4));
+  const encode = str => {
+    str = btoa(JSON.stringify(str))
+    return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  const decode = str => {
+    str = str.replace(/\-/g, '+').replace(/_/g, '/') + '=='.substring(0, (3 * str.length) % 4);
+    return JSON.parse(atob(str))
+  }
 
   const onMessage = evt => {
     const payload = JSON.parse(evt.data);
@@ -56,12 +62,12 @@ const cursorPng = require("./icons").cursor;
     if (evt.candidate == null) {
       prompt(
         "Please share this token to your partner and click [OK].",
-        btoa(JSON.stringify(pc1.localDescription))
+        encode(pc1.localDescription)
       );
       const offer = prompt(
         "Please enter the token your partner shared with you and click [OK]."
       );
-      const answerDesc = new RTCSessionDescription(JSON.parse(atob(offer)));
+      const answerDesc = new RTCSessionDescription(decode(offer));
       await pc1.setRemoteDescription(answerDesc);
     }
   });
@@ -71,7 +77,7 @@ const cursorPng = require("./icons").cursor;
     if (evt.candidate == null) {
       prompt(
         "Please share this token to your partner and click [OK].",
-        btoa(JSON.stringify(pc2.localDescription))
+        encode(pc2.localDescription)
       );
     }
   });
@@ -106,7 +112,7 @@ const cursorPng = require("./icons").cursor;
     const offer = prompt(
       "Please enter the token your partner shared with you and click [OK]."
     );
-    var offerDesc = new RTCSessionDescription(JSON.parse(atob(offer)));
+    var offerDesc = new RTCSessionDescription(decode(offer));
     await pc2.setRemoteDescription(offerDesc);
     const answerDesc = await pc2.createAnswer();
     pc2.setLocalDescription(answerDesc);
