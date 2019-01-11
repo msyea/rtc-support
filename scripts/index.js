@@ -9,11 +9,11 @@ const cursorPng = require("./icons").cursor;
   const setupPlugins = () => {
     console.log('To send a message use "chat `hello`" ');
     window.sendMessage = message => {
-      console.log(`[You] ${message}`)
+      console.log(`[You] ${message}`);
       state.activeDc.send(JSON.stringify({ message }));
     };
     window.chat = messageTpl => {
-      console.log(`[You] ${messageTpl[0]}`)
+      console.log(`[You] ${messageTpl[0]}`);
       state.activeDc.send(JSON.stringify({ message: messageTpl[0] }));
     };
     cursor = Object.assign(document.createElement("img"), {
@@ -40,9 +40,9 @@ const cursorPng = require("./icons").cursor;
       cursor.style.left = `${payload.clientX}px`;
       cursor.style.top = `${payload.clientY}px`;
     } else if (payload.message) {
-      console.log(`[Partner] ${payload.message}`)
+      console.log(`[Partner] ${payload.message}`);
     } else {
-      console.log(evt)
+      console.log(evt);
     }
   };
 
