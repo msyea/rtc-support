@@ -33,6 +33,9 @@ const cursorPng = require("./icons").cursor;
       );
     });
   };
+  
+  const encode64 = str => str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const decode64 = str => (str.replace(/\-/g, '+').replace(/_/g, '/') + '=='.substring(0, (3*str.length)%4));
 
   const onMessage = evt => {
     const payload = JSON.parse(evt.data);
