@@ -4,12 +4,23 @@ services:
   app:
     build: .
     ports:
-     - "8000:8000"
+     - "8080:8080"
     volumes:
      - .:/usr/src/app
+    networks:
+      default:
+        aliases:
+          - app.local
   selenium:
-    image: selenium/standalone-chrome
+    image: selenium/standalone-chrome-debug
     shm_size: "2gb"
     ports:
       - "4444:4444"
       - "5900:5900"
+  start_dependencies:
+    image: dadarek/wait-for-dependencies
+    depends_on:
+      - app
+      - selenium
+    command: app:8080 selenium:4444
+    

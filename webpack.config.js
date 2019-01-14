@@ -4,7 +4,10 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 module.exports = {
   entry: "./src/index.js",
   devServer: {
-    contentBase: "./dist"
+    contentBase: "./dist",
+    port: 8080,
+    disableHostCheck: true,
+    host: '0.0.0.0'
   },
   plugins: [
     new CopyWebpackPlugin([
