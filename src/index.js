@@ -2,7 +2,7 @@ const cursorPng = require("./icons").cursor;
 const Client = require("./client");
 
 (async () => {
-  const plugin1 = client => {
+  const mousePlugin = client => {
     console.log('To send a message use "chat `hello`" ');
     window.sendMessage = message => {
       console.log(`[You] ${message}`);
@@ -36,7 +36,25 @@ const Client = require("./client");
     };
   };
 
+  const audioPlugin = async client => {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true
+      // video: true
+    });
+    stream.getTracks().forEach(track => client.pc.addTrack(track, stream));
+
+    const audio = new Audio();
+    audio.autoplay = true;
+    client.pc.addEventListener("track", evt => {
+      if (!audio.srcObject) {
+        audio.srcObject = evt.streams[0];
+      }
+    });
+    return () => false;
+  };
+
   const client = new Client();
-  client.addPlugin(plugin1);
+  client.addPlugin(mousePlugin);
+  client.addPlugin(audioPlugin);
   client.connect();
 })();

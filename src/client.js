@@ -16,7 +16,6 @@ module.exports = class Client {
   addPcEvents() {
     this.pc.addEventListener("icecandidate", this.onIceCandidate.bind(this));
     this.pc.addEventListener("datachannel", this.onDataChannel.bind(this));
-    this.pc.addEventListener("track", this.onTrack.bind(this))
   }
   async onIceCandidate(evt) {
     if (evt.candidate == null) {
@@ -25,7 +24,7 @@ module.exports = class Client {
         encodeToken(this.pc.localDescription)
       );
       if (this.state.mode === MODE_REQUESTOR) {
-        await this.receiveToken()
+        await this.receiveToken();
       }
     }
   }
@@ -36,9 +35,6 @@ module.exports = class Client {
       this.dc.addEventListener("open", this.onChannelOpen.bind(this));
       this.dc.addEventListener("message", this.onMessage.bind(this));
     }
-  }
-  onTrack(evt) {
-    console.log("pcontrack", evt);
   }
   onMessage(evt) {
     const payload = JSON.parse(evt.data);
@@ -82,7 +78,7 @@ module.exports = class Client {
   }
   async respond() {
     this.state.mode = MODE_RESPONDER;
-    await this.receiveToken()
+    await this.receiveToken();
     const answerDesc = await this.pc.createAnswer();
     this.pc.setLocalDescription(answerDesc);
   }
@@ -93,9 +89,9 @@ module.exports = class Client {
     const offerDesc = new RTCSessionDescription(decodeToken(offer));
     await this.pc.setRemoteDescription(offerDesc);
   }
-  setupPlugins() {
+  async setupPlugins() {
     // initialise each plugin with client
-    this.plugins = this.plugins.map(plugin => plugin(this));
+    this.plugins = await Promise.all(this.plugins.map(plugin => plugin(this)));
   }
   addPlugin(plugin) {
     this.plugins.push(plugin);
@@ -106,7 +102,7 @@ module.exports = class Client {
   async setupAudio() {
     console.log(this.state.mode);
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
+      audio: true
       // video: true
     });
     stream.getTracks().forEach(track => this.pc.addTrack(track, stream));
