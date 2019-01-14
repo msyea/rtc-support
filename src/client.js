@@ -1,55 +1,44 @@
 const { encodeToken, decodeToken } = require("./utils");
 
+const MODE_REQUESTOR = "MODE_REQUESTOR";
+const MODE_RESPONDER = "MODE_RESPONDER";
 module.exports = class Client {
   constructor(config) {
     const rtcConfig = {}; // { iceServers: [{ url: "stun:stun.gmx.net" }] };
-    this.pc1 = new RTCPeerConnection(rtcConfig);
-    this.dc1;
-    this.pc2 = new RTCPeerConnection(rtcConfig);
-    this.dc2;
+    this.pc = new RTCPeerConnection(rtcConfig);
+    this.dc;
     this.addPcEvents();
     this.state = {
-      activeDc: null
+      mode: null
     };
     this.plugins = [];
   }
   addPcEvents() {
-    this.pc1.addEventListener(
-      "icecandidate",
-      this.onPc1IceCandidate.bind(this)
-    );
-    this.pc2.addEventListener(
-      "icecandidate",
-      this.onPc2IceCandidate.bind(this)
-    );
-    this.pc2.addEventListener("datachannel", this.onPc2DataChannel.bind(this));
+    this.pc.addEventListener("icecandidate", this.onIceCandidate.bind(this));
+    this.pc.addEventListener("datachannel", this.onDataChannel.bind(this));
+    this.pc.addEventListener("track", this.onTrack.bind(this))
   }
-  async onPc1IceCandidate(evt) {
+  async onIceCandidate(evt) {
     if (evt.candidate == null) {
       prompt(
         "Please share this token to your partner and click [OK].",
-        encodeToken(this.pc1.localDescription)
+        encodeToken(this.pc.localDescription)
       );
-      const answer = prompt(
-        "Please enter the token your partner shared with you and click [OK]."
-      );
-      const answerDesc = new RTCSessionDescription(decodeToken(answer));
-      await this.pc1.setRemoteDescription(answerDesc);
+      if (this.state.mode === MODE_REQUESTOR) {
+        await this.receiveToken()
+      }
     }
   }
-  async onPc2IceCandidate(evt) {
-    if (evt.candidate == null) {
-      prompt(
-        "Please share this token to your partner and click [OK].",
-        encodeToken(this.pc2.localDescription)
-      );
+  onDataChannel(evt) {
+    if (this.state.mode === MODE_RESPONDER) {
+      this.dc = evt.channel || evt;
+      console.log("seting dc", this.state.mode, "dc");
+      this.dc.addEventListener("open", this.onChannelOpen.bind(this));
+      this.dc.addEventListener("message", this.onMessage.bind(this));
     }
   }
-  onPc2DataChannel(evt) {
-    this.dc2 = evt.channel || evt;
-    this.state.activeDc = this.dc2;
-    this.dc2.addEventListener("open", this.onChannelOpen.bind(this));
-    this.dc2.addEventListener("message", this.onMessage.bind(this));
+  onTrack(evt) {
+    console.log("pcontrack", evt);
   }
   onMessage(evt) {
     const payload = JSON.parse(evt.data);
@@ -65,6 +54,7 @@ module.exports = class Client {
   onChannelOpen() {
     console.log("channel open");
     this.setupPlugins();
+    this.setupAudio();
   }
   async connect() {
     const requestOrRespond = confirm(
@@ -82,21 +72,26 @@ module.exports = class Client {
     }
   }
   async request() {
-    this.dc1 = this.pc1.createDataChannel("test", { reliable: true });
-    this.state.activeDc = this.dc1;
-    this.dc1.addEventListener("open", this.onChannelOpen.bind(this));
-    this.dc1.addEventListener("message", this.onMessage.bind(this));
-    const offer = await this.pc1.createOffer();
-    await this.pc1.setLocalDescription(offer);
+    this.state.mode = MODE_REQUESTOR;
+    this.dc = this.pc.createDataChannel("test", { reliable: true });
+    console.log("seting dc", this.state.mode, "dc");
+    this.dc.addEventListener("open", this.onChannelOpen.bind(this));
+    this.dc.addEventListener("message", this.onMessage.bind(this));
+    const offer = await this.pc.createOffer();
+    await this.pc.setLocalDescription(offer);
   }
   async respond() {
+    this.state.mode = MODE_RESPONDER;
+    await this.receiveToken()
+    const answerDesc = await this.pc.createAnswer();
+    this.pc.setLocalDescription(answerDesc);
+  }
+  async receiveToken() {
     const offer = prompt(
       "Please enter the token your partner shared with you and click [OK]."
     );
-    var offerDesc = new RTCSessionDescription(decodeToken(offer));
-    await this.pc2.setRemoteDescription(offerDesc);
-    const answerDesc = await this.pc2.createAnswer();
-    this.pc2.setLocalDescription(answerDesc);
+    const offerDesc = new RTCSessionDescription(decodeToken(offer));
+    await this.pc.setRemoteDescription(offerDesc);
   }
   setupPlugins() {
     // initialise each plugin with client
@@ -106,6 +101,14 @@ module.exports = class Client {
     this.plugins.push(plugin);
   }
   send(data) {
-    this.state.activeDc.send(JSON.stringify(data));
+    this.dc.send(JSON.stringify(data));
+  }
+  async setupAudio() {
+    console.log(this.state.mode);
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      // video: true
+    });
+    stream.getTracks().forEach(track => this.pc.addTrack(track, stream));
   }
 };
