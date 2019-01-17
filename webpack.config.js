@@ -13,7 +13,7 @@ module.exports = {
     new CopyWebpackPlugin([
       {
         context: "./browser/",
-        from: "**/*.html",
+        from: "**/*",
         to: "."
       }
     ])
