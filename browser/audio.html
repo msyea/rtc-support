@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Empty Page</title>
+  </head>
+  <body>
+    <script>
+    context = new AudioContext();
+    request = new XMLHttpRequest();
+    request.open("GET","music.mp3",true);
+    request.responseType = "arraybuffer";
+
+    ctxDestination = context.createMediaStreamDestination()
+
+    audio = new Audio()
+    audio.srcObject = ctxDestination.stream
+
+    request.onload = async () => {
+      const buffer = await context.decodeAudioData(request.response)
+      /* BaseAudioContext */
+      source = context.createBufferSource();  
+      source.buffer = buffer;
+      source.connect(ctxDestination);
+      // auto play
+      // source.start(0); // start was previously noteOn
+    };
+
+    request.send();
+
+    </script>
+  </body>
+</html>

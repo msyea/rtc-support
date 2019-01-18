@@ -4,9 +4,9 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "start": "webpack-dev-server",
+    "start": "webpack-dev-server --https",
     "test": "docker-compose run start_dependencies && docker-compose run app npm run test-mocha",
-    "test-mocha": "mocha --recursive",
+    "test-mocha": "mocha --recursive --timeout 5000",
     "build": "webpack --mode=production",
     "build-dev": "webpack --mode=development"
   },

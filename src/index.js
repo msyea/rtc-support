@@ -41,15 +41,19 @@ const Client = require("./client");
       audio: true
       // video: true
     });
-    stream.getTracks().forEach(track => client.pc.addTrack(track, stream));
 
     const audio = new Audio();
     audio.autoplay = true;
     client.pc.addEventListener("track", evt => {
+      console.log('ontrack', evt)
       if (!audio.srcObject) {
+        console.log(evt.streams[0])
         audio.srcObject = evt.streams[0];
       }
     });
+
+    stream.getTracks().forEach(track => client.pc.addTrack(track, stream));
+
     return () => false;
   };
 
