@@ -39,10 +39,10 @@ module.exports = class Client {
   onMessage(evt) {
     const payload = JSON.parse(evt.data);
     // call each plugin with incoming message
-    const plugins = this.plugins.filter(plugin => plugin(payload));
+    const plugins = this.pluginsReady ? this.plugins.filter(plugin => plugin(payload)) : [];
     if (payload.message) {
       console.log(`[Partner] ${payload.message}`);
-    } else if (!plugins.length) {
+    } else if (this.pluginsReady && this.plugins.length && !plugins.length) {
       // only 🤮 evt if it's not picked up by plugin
       console.log(evt);
     }
@@ -92,12 +92,17 @@ module.exports = class Client {
   async setupPlugins() {
     // initialise each plugin with client
     this.plugins = await Promise.all(this.plugins.map(plugin => plugin(this)));
+    this.pluginsReady = true
   }
   addPlugin(plugin) {
     this.plugins.push(plugin);
   }
   send(data) {
-    this.dc.send(JSON.stringify(data));
+    if (this.dc && this.dc.readyState === 'open') {
+      this.dc.send(JSON.stringify(data));
+    } else {
+      console.log('data channel notReady', data, this.dc && this.dc.readyState)
+    }
   }
   async setupAudio() {
     console.log(this.state.mode);
