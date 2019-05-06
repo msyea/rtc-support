@@ -31,7 +31,7 @@ module.exports = class Client {
   onDataChannel(evt) {
     if (this.state.mode === MODE_RESPONDER) {
       this.dc = evt.channel || evt;
-      console.log("seting dc", this.state.mode, "dc");
+      console.log("setting dc", this.state.mode, "dc");
       this.dc.addEventListener("open", this.onChannelOpen.bind(this));
       this.dc.addEventListener("message", this.onMessage.bind(this));
     }
@@ -50,7 +50,6 @@ module.exports = class Client {
   onChannelOpen() {
     console.log("channel open");
     this.setupPlugins();
-    this.setupAudio();
   }
   async connect() {
     const requestOrRespond = confirm(
@@ -103,13 +102,5 @@ module.exports = class Client {
     } else {
       console.log('data channel notReady', data, this.dc && this.dc.readyState)
     }
-  }
-  async setupAudio() {
-    console.log(this.state.mode);
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true
-      // video: true
-    });
-    stream.getTracks().forEach(track => this.pc.addTrack(track, stream));
   }
 };

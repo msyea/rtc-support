@@ -4,7 +4,7 @@
     <title>Empty Page</title>
   </head>
   <body>
-    <script>
+    <!-- script>
     context = new AudioContext();
     request = new XMLHttpRequest();
     request.open("GET","music.mp3",true);
@@ -27,6 +27,18 @@
 
     request.send();
 
-    </script>
+    </script -->
+    <video autoplay></video>
+
+<script>
+const constraints = {
+  video: true
+};
+
+const video = document.querySelector('video');
+
+navigator.mediaDevices.getUserMedia(constraints).
+  then((stream) => {video.srcObject = stream});
+</script>
   </body>
 </html>

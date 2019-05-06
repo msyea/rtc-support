@@ -37,11 +37,6 @@ const Client = require("./client");
   };
 
   const audioPlugin = async client => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true
-      // video: true
-    });
-
     const audio = new Audio();
     audio.autoplay = true;
     client.pc.addEventListener("track", evt => {
@@ -51,8 +46,17 @@ const Client = require("./client");
         audio.srcObject = evt.streams[0];
       }
     });
-
-    stream.getTracks().forEach(track => client.pc.addTrack(track, stream));
+    
+    if (client.state.mode === 'MODE_REQUESTOR') {
+      console.log('setting up audio')
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true
+        // video: true
+      });
+      
+      stream.getTracks().forEach(track => client.pc.addTrack(track, stream));
+      console.log(stream.getTracks())
+    }
 
     return () => false;
   };
