@@ -12,9 +12,7 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "hapi": "^17.8.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "copy-webpack-plugin": "^4.6.0",
     "mocha": "^5.2.0",
