@@ -1,9 +1,7 @@
 const cursorPng = require('./icons').cursor
 const Client = require('./client')
 
-;
-
-(async () => {
+;(async () => {
   const mousePlugin = client => {
     console.log('To send a message use "chat `hello`" ')
     window.sendMessage = message => {

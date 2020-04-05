@@ -1,12 +1,13 @@
+/* eslint-disable no-alert */
 const { encodeToken, decodeToken } = require('./utils')
 
 const MODE_REQUESTOR = 'MODE_REQUESTOR'
 const MODE_RESPONDER = 'MODE_RESPONDER'
 module.exports = class Client {
-  constructor(config) {
+  constructor() {
     const rtcConfig = {} // { iceServers: [{ url: "stun:stun.gmx.net" }] };
     this.pc = new RTCPeerConnection(rtcConfig)
-    this.dc
+    this.dc = null
     this.addPcEvents()
     this.state = {
       mode: null,
